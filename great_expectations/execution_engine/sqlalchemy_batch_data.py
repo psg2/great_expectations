@@ -238,7 +238,7 @@ class SqlAlchemyBatchData(BatchData):
             )
         elif self.sql_engine_dialect.name.lower() == "databricks":
             stmt = "CREATE OR REPLACE VIEW `{table_name}` AS {query}".format(
-                table_name=temp_table_name, custom_sql=query
+                table_name=temp_table_name, query=query
             )
         elif self.sql_engine_dialect.name.lower() == "oracle":
             # oracle 18c introduced PRIVATE temp tables which are transient objects
