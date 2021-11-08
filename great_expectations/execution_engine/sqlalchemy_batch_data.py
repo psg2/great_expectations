@@ -237,7 +237,7 @@ class SqlAlchemyBatchData(BatchData):
                 temp_table_name=temp_table_name, query=query
             )
         elif self.sql_engine_dialect.name.lower() == "databricks":
-            stmt = "CREATE OR REPLACE VIEW `{table_name}` AS {query}".format(
+            stmt = "CREATE OR REPLACE TEMPORARY VIEW `{table_name}` AS {query}".format(
                 table_name=temp_table_name, query=query
             )
         elif self.sql_engine_dialect.name.lower() == "oracle":
