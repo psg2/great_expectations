@@ -236,6 +236,10 @@ class SqlAlchemyBatchData(BatchData):
             stmt = "CREATE TABLE {temp_table_name} AS {query}".format(
                 temp_table_name=temp_table_name, query=query
             )
+        elif self.sql_engine_dialect.name.lower() == "databricks":
+            stmt = "CREATE TABLE {temp_table_name} AS {query}".format(
+                temp_table_name=temp_table_name, query=query
+            )
         elif self.sql_engine_dialect.name.lower() == "oracle":
             # oracle 18c introduced PRIVATE temp tables which are transient objects
             stmt_1 = "CREATE PRIVATE TEMPORARY TABLE {temp_table_name} ON COMMIT PRESERVE DEFINITION AS {query}".format(
