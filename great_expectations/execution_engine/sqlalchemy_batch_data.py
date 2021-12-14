@@ -198,11 +198,15 @@ class SqlAlchemyBatchData(BatchData):
         Create Temporary table based on sql query. This will be used as a basis for executing expectations.
         :param query:
         """
-        if self.sql_engine_dialect.name.lower() == "bigquery":
+        engine_dialect = self.sql_engine_dialect.name.lower()
+        if isinstance(engine_dialect, bytes):
+            engine_dialect = str(engine_dialect, "utf-8")
+
+        if engine_dialect == "bigquery":
             stmt = "CREATE OR REPLACE TABLE `{temp_table_name}` AS {query}".format(
                 temp_table_name=temp_table_name, query=query
             )
-        elif self.sql_engine_dialect.name.lower() == "snowflake":
+        elif engine_dialect == "snowflake":
             if temp_table_schema_name is not None:
                 temp_table_name = temp_table_schema_name + "." + temp_table_name
             stmt = (
@@ -210,13 +214,13 @@ class SqlAlchemyBatchData(BatchData):
                     temp_table_name=temp_table_name, query=query
                 )
             )
-        elif self.sql_engine_dialect.name == "mysql":
+        elif engine_dialect == "mysql":
             # Note: We can keep the "MySQL" clause separate for clarity, even though it is the same as the
             # generic case.
             stmt = "CREATE TEMPORARY TABLE {temp_table_name} AS {query}".format(
                 temp_table_name=temp_table_name, query=query
             )
-        elif self.sql_engine_dialect.name == "mssql":
+        elif engine_dialect == "mssql":
             # Insert "into #{temp_table_name}" in the custom sql query right before the "from" clause
             # Split is case sensitive so detect case.
             # Note: transforming query to uppercase/lowercase has unintended consequences (i.e.,
@@ -232,15 +236,15 @@ class SqlAlchemyBatchData(BatchData):
             stmt = (querymod[0] + "into {temp_table_name} from" + querymod[1]).format(
                 temp_table_name=temp_table_name
             )
-        elif self.sql_engine_dialect.name.lower() == "awsathena":
+        elif engine_dialect == "awsathena":
             stmt = "CREATE TABLE {temp_table_name} AS {query}".format(
                 temp_table_name=temp_table_name, query=query
             )
-        elif self.sql_engine_dialect.name.lower() == "databricks":
+        elif engine_dialect == "databricks":
             stmt = "CREATE OR REPLACE TEMPORARY VIEW `{table_name}` AS {query}".format(
                 table_name=temp_table_name, query=query
             )
-        elif self.sql_engine_dialect.name.lower() == "oracle":
+        elif engine_dialect == "oracle":
             # oracle 18c introduced PRIVATE temp tables which are transient objects
             stmt_1 = "CREATE PRIVATE TEMPORARY TABLE {temp_table_name} ON COMMIT PRESERVE DEFINITION AS {query}".format(
                 temp_table_name=temp_table_name, query=query
@@ -254,7 +258,7 @@ class SqlAlchemyBatchData(BatchData):
             stmt = 'CREATE TEMPORARY TABLE "{temp_table_name}" AS {query}'.format(
                 temp_table_name=temp_table_name, query=query
             )
-        if self.sql_engine_dialect.name.lower() == "oracle":
+        if engine_dialect == "oracle":
             try:
                 self._engine.execute(stmt_1)
             except DatabaseError:
